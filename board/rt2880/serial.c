@@ -36,6 +36,9 @@
 #define cpu_to_le32(x) (x)
 #endif
 
+#define ra_outl(addr, value)  (*(volatile u32 *)(addr) = (value))
+#define ra_inl(addr)  (*(volatile u32 *)(addr))
+
 #if defined(RT6855A_ASIC_BOARD) || defined(RT6855A_FPGA_BOARD)
 static unsigned long uclk_20M[13]={ // 65000*(b*16*1)/2000000
 	59904,          // Baud rate 115200
