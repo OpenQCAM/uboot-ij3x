@@ -1319,6 +1319,46 @@ void smart7688_led_blink(void)
 }
 
 
+void IJ3B_Config_GPIO_LED (void)
+{
+
+#define GPIO39_24_DATA	0x48
+#define GPIO39_24_DIR	0x4C
+#define GPIO39_24_POR	0x50
+	u32 g;
+
+	/* Config RMMII1 (GPIO24~35) as GPIO mode */
+	printf("\nGPIOMODE (before) --> %x\n", RALINK_REG(RALINK_SYSCTL_BASE+GPIOMODE));
+	RALINK_REG(RALINK_SYSCTL_BASE+GPIOMODE) |= (1 << 9);
+	printf("\nGPIOMODE(after) --> %x\n", RALINK_REG(RALINK_SYSCTL_BASE+GPIOMODE));
+
+	/* Set GPIO24 ~ 26 as output for LED*/
+	g = RALINK_REG(RALINK_PIO_BASE+GPIO39_24_DIR);
+	g |= ((1 << 0) | (1 << 1) | (1 << 2));
+	RALINK_REG(RALINK_PIO_BASE+GPIO39_24_DIR) = g;
+
+
+#if 0
+	/* Set GPIO 24 ~ 26 polarity */
+	g = RALINK_REG(RALINK_PIO_BASE+GPIO39_24_POR);
+	printf("\nGPIO39_24_POR --> %x\n", g);
+	g |= ((1 << 0) | (1 << 1) | (1 << 2));
+	printf("\nGPIO39_24_POR (after)--> %x\n", g);
+	RALINK_REG(RALINK_PIO_BASE+GPIO39_24_POR) = g;
+#endif
+
+//Keep all LED on (#if 0)
+#if 0 
+
+	/* Set RED LED on, Blue/Green LED off */
+	g = RALINK_REG(RALINK_PIO_BASE+GPIO39_24_DATA);
+	printf("\nGPIO39_24_DATA (before) --> %x\n", g);
+	//g &= ~((1 << 0) | (1 << 1) | (1 << 2)); //if polarity inverted
+	g |= ((1 << 0) | (1 << 1)); 
+	RALINK_REG(RALINK_PIO_BASE+GPIO39_24_DATA) = g;
+	printf("\nGPIO39_24_DATA (after)--> %x\n", RALINK_REG(RALINK_PIO_BASE+GPIO39_24_DATA));
+#endif	
+}
 /************************************************************************
  *
  * This is the next part if the initialization sequence: we are now
@@ -1992,12 +2032,16 @@ __attribute__((nomips16)) void board_init_r (gd_t *id, ulong dest_addr)
 	    s = getenv ("bootdelay");
 	    timer1 = s ? (int)simple_strtol(s, NULL, 10) : CONFIG_BOOTDELAY;
 	}
-	u32 g;
+
+	IJ3B_Config_GPIO_LED ();
+
+#if 0 // Joe Wang (for IJ3B)
 
 	// BOOTSTRAP
 	// set GPIO11 to output
 	RALINK_REG(RALINK_PIO_BASE+PIO_DIR0) |= (0x1 << 11);
 	// clear GPIO11
+	///////////// This will mis-set IJ3B (MT7620)'s GPIO39_25_RMASK (0x40) MMIO, and cause the linux failed... 
 	RALINK_REG(RALINK_PIO_BASE+PIO_CLEAR0) |= (0x1 << 11);
 
 	// ARDUINO
@@ -2072,6 +2116,7 @@ __attribute__((nomips16)) void board_init_r (gd_t *id, ulong dest_addr)
 	}
 
 	RALINK_REG(RALINK_PIO_BASE+PIO_SET1) |= (1 << 12);
+#endif //Joe Wang (for IJ3B)
 
 	OperationSelect();
 	while (timer1 > 0) {
