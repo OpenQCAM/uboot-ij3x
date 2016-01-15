@@ -105,7 +105,7 @@ ulong monitor_flash_len;
 
 const char version_string[] =
 	U_BOOT_VERSION" (" __DATE__ " - " __TIME__ ")";
-
+const char quanta_version_string[] = QUANTA_VERSION;
 extern ulong load_addr; /* Default Load Address */
 
 
@@ -545,6 +545,7 @@ static int display_banner(void)
 {
    
 	printf ("\n\n%s\n\n", version_string);
+	printf ("%s\n\n", quanta_version_string);
 	return (0);
 }
 
